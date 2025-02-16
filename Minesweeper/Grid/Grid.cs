@@ -8,12 +8,13 @@ class Grid {
     private int bombCount;
     private HashSet<(int,int)> bombPositions;
     private bool isFirstClick = true;
+    public int FlagCount { get; private set; }
     public Grid(int width, int height, int bombCount)
     {
         this.width = width;
         this.height = height;
         this.bombCount = bombCount;
-
+        FlagCount = bombCount;
         Cells = new ICell[width, height];
         bombPositions = new HashSet<(int, int)>();
         for (int i = 0; i < width; i++)
@@ -34,6 +35,7 @@ class Grid {
             }
         }
         isFirstClick = true;
+        FlagCount = bombCount;
 
     }
     private static readonly (int, int)[] Directions = {
@@ -41,6 +43,31 @@ class Grid {
         (-1,  0),         (1,  0),
         (-1,  1), (0,  1), (1,  1)
     };
+    public bool CheckWinFlag() {
+        foreach (var bomb in bombPositions) {
+            (int x, int y) = bomb;
+            if (!Cells[x,y].Flagged) {
+                return false;
+            }
+        }
+        return true;
+    }
+    public bool CheckWinNumber() {
+        foreach (var cell in Cells) {
+            if (!cell.IsBomb && !cell.Revealed) {
+                return false;
+            }
+        }
+        return true;
+    }
+    public void PutFlag(int x, int y) {
+        Cells[x,y].Flagged = true;
+        FlagCount--;
+    }
+    public void TakeFlag(int x, int y) {
+        Cells[x,y].Flagged = false;
+        FlagCount++;
+    }
     private bool IsInBounds(int x, int y) =>
         x >= 0 && x < Cells.GetLength(0) &&
         y >= 0 && y < Cells.GetLength(1);
@@ -119,7 +146,7 @@ class Grid {
             int nx = x + dx, ny = y + dy;
             
             if (IsInBounds(nx, ny)) {
-                if (!Cells[nx, ny].Revealed) {
+                if (!Cells[nx, ny].Revealed && !Cells[nx, ny].Flagged) {
                     Cells[nx, ny].Revealed = true;
                     if (Cells[nx, ny].AdjacentBombs == 0) {
                         TouchedEmpty(nx, ny);
@@ -139,9 +166,9 @@ class Grid {
     }
     public void Lose(int posX, int posY) {
         Cells[posX, posY].RevealedBombFirst = true;
-        foreach (var pos in bombPositions) {
-            (int x, int y) = pos;
-            Cells[x,y].Revealed = true;
+        foreach (var cell in Cells) {
+            if (!cell.Flagged && cell.IsBomb) cell.Revealed = true;
+            if (cell.Flagged && !cell.IsBomb) cell.FalseFlagged = true;
         }
     }
     public void Draw() {
@@ -182,6 +209,9 @@ class Grid {
                 }
                 if (Cells[i,j].RevealedBombFirst) {
                     DrawMS.LoseBomb(xPos, yPos);
+                }
+                if (Cells[i,j].FalseFlagged) {
+                    DrawMS.FalseFlag(xPos, yPos);
                 }
             }
         }

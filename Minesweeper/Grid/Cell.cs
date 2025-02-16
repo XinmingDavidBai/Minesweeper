@@ -8,6 +8,7 @@ public interface ICell
     bool Revealed { get; set;}
     bool Flagged { get; set;}
     bool RevealedBombFirst { get; set; }
+    bool FalseFlagged { get; set; }
 }
 class BombCell : ICell  {  
     public bool IsBomb => true;  
@@ -16,9 +17,9 @@ class BombCell : ICell  {
     public bool Revealed { get; set; } = false;
     public bool Flagged { get; set; } = false;
     public bool RevealedBombFirst { get; set; } = false;
- }  
+    public bool FalseFlagged { get; set; } = false; //ignore
 
-
+}
 class NumberCell : ICell  {  
     public bool IsBomb => false;
     public int AdjacentBombs { get; private set; } = 0;
@@ -30,5 +31,6 @@ class NumberCell : ICell  {
     public bool Revealed { get; set; } = false;
     public bool Flagged { get; set; } = false;
     public bool RevealedBombFirst { get; set; } = false; //ignore
+    public bool FalseFlagged { get; set; } = false;
 }
 
