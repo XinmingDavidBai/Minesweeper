@@ -1,3 +1,4 @@
+using System.Numerics;
 using Minesweeper;
 using Raylib_cs;
 
@@ -18,6 +19,13 @@ class Game {
 
         while (!Raylib.WindowShouldClose())
         {
+            Vector2 ballPosition = Raylib.GetMousePosition();
+            (int x, int y) = ((int)ballPosition.X / MagicNumbers.CELL_WIDTH, (int)ballPosition.Y / MagicNumbers.CELL_HEIGHT);
+            if (Raylib.IsMouseButtonPressed(MouseButton.Left)) {
+                grid.Cells[x,y].Revealed = true;
+            } else if (Raylib.IsMouseButtonPressed(MouseButton.Right)){
+                grid.Cells[x,y].Flagged = true;
+            }
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.White);
 

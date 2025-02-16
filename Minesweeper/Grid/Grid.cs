@@ -1,6 +1,7 @@
 namespace Minesweeper;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Raylib_cs;
 class Grid
 {
@@ -81,8 +82,8 @@ class Grid
     }
 
     public void Draw() {
-        int cellWidth = 40;  // Width of each cell
-        int cellHeight = 40; // Height of each cell
+        int cellWidth = MagicNumbers.CELL_WIDTH;  // Width of each cell
+        int cellHeight = MagicNumbers.CELL_HEIGHT; // Height of each cell
 
         for (int i = 0; i < width; i++)
         {
@@ -105,6 +106,19 @@ class Grid
                         break;
                     default:
                         throw new Exception("Unknown cell type");
+                }
+                // Drawing layer on top of it
+                if (!Cells[i, j].Revealed) { 
+                    Raylib.DrawRectangle(xPos, yPos, cellWidth, cellHeight, Color.Gray);
+                }
+                if (Cells[i,j].Flagged) {
+                    // Draw flag
+                    Raylib.DrawTriangle(
+                        new Vector2(xPos, yPos),
+                        new Vector2(xPos, yPos + cellHeight),
+                        new Vector2(xPos + cellWidth, yPos + cellHeight / 2), 
+                        Color.Red
+                    );
                 }
             }
         }
