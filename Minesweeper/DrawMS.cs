@@ -45,6 +45,6 @@ public static class DrawMS {
         Raylib.DrawText("You Win!!!", 0, height * 40, 40, Color.Black);
     }
     public static void Time(string time) {
-        Raylib.DrawText(time, Raylib.GetScreenWidth() - 100, 10, 20, Color.Black);
+        Raylib.DrawText(time, Raylib.GetScreenWidth() - 100, 50, 20, Color.Black);
     }
 }

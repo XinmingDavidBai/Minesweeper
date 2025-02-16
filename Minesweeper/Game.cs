@@ -12,7 +12,7 @@ class Game {
         this.width = width;
         this.height = height;
         this.name = name;
-        grid = new Grid(9,9,10);
+        grid = new Grid(16,16,40);
     }
     public void Run() {
         Raylib.InitWindow(width, height, name);
@@ -24,8 +24,8 @@ class Game {
         while (!Raylib.WindowShouldClose()) {   
             Vector2 mousePosition = Raylib.GetMousePosition();
             (int x, int y) = ((int)mousePosition.X / MagicNumbers.CELL_WIDTH, (int)mousePosition.Y / MagicNumbers.CELL_HEIGHT);
-            bool board = (x < 9) && (y < 9);
-            bool reset = mousePosition.X >= 9 * 40 && mousePosition.X <= 9*40 + 100 && 
+            bool board = (x < 16) && (y < 16);
+            bool reset = mousePosition.X >= 16 * 40 && mousePosition.X <= 16*40 + 100 && 
                          mousePosition.Y >= 0 && mousePosition.Y <= 40;
             if (!won && !lost) {
                 elapsedTime = Raylib.GetTime() - startTime;
@@ -65,11 +65,11 @@ class Game {
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.White);
             if (won) {
-                DrawMS.Win(9);
+                DrawMS.Win(16);
             }
             int timeInt = (int)elapsedTime;
             DrawMS.Time($"Time: {timeInt}");
-            DrawMS.Reset(9);
+            DrawMS.Reset(16);
             grid.Draw();
             Raylib.EndDrawing();
         }
