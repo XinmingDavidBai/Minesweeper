@@ -1,22 +1,40 @@
 namespace Minesweeper;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
-using Raylib_cs;
-class Grid
-{
-
+class Grid {
     public ICell[,] Cells { get; private set; }
     private int width;
     private int height;
+    private int bombCount;
+    private HashSet<(int,int)> bombPositions;
+    private bool isFirstClick = true;
     public Grid(int width, int height, int bombCount)
     {
         this.width = width;
         this.height = height;
+        this.bombCount = bombCount;
+
         Cells = new ICell[width, height];
-        PlaceBombs(width, height, bombCount);
-        InitializeNumberCells(width, height);
-        UpdateNumbers();
+        bombPositions = new HashSet<(int, int)>();
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                Cells[i, j] = new NumberCell(); // Default empty cell
+            }
+        }
+
+    }
+    public void Reset() {
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                Cells[i, j] = new NumberCell(); // Default empty cell
+            }
+        }
+        isFirstClick = true;
+
     }
     private static readonly (int, int)[] Directions = {
         (-1, -1), (0, -1), (1, -1),
@@ -26,50 +44,59 @@ class Grid
     private bool IsInBounds(int x, int y) =>
         x >= 0 && x < Cells.GetLength(0) &&
         y >= 0 && y < Cells.GetLength(1);
-    private void PlaceBombs(int width, int height, int bombCount)
-    {
-        Random random = new Random();
-        HashSet<(int, int)> bombPositions = new HashSet<(int, int)>();
+    public void HandleFirstClick(int startX, int startY) {
+        if (!isFirstClick) return;
 
-        while (bombPositions.Count < bombCount)
-        {
-            int x = random.Next(width);
-            int y = random.Next(height);
+        isFirstClick = false; 
+        PlaceBombs(width, height, bombCount, startX, startY);
+        InitializeNumberCells(width, height);
+        UpdateNumbers();
+    }
 
-            if (!bombPositions.Contains((x, y)))
-            {
-                bombPositions.Add((x, y));
-                Cells[x, y] = new BombCell();
+    private void PlaceBombs(int width, int height, int bombCount, int startX, int startY) {
+        List<(int, int)> allPositions = new List<(int, int)>();
+
+        // Add all positions except the ones near the first click
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                // Skip the first clicked cell and its adjacent cells
+                if (Math.Abs(x - startX) <= 1 && Math.Abs(y - startY) <= 1) {
+                    continue;
+                }
+                allPositions.Add((x, y));
             }
+        }
+
+        // Shuffle and pick the first `bombCount` positions
+        Random random = new Random();
+        allPositions = allPositions.OrderBy(_ => random.Next()).ToList();
+
+        for (int i = 0; i < bombCount && i < allPositions.Count; i++) {
+            (int x, int y) = allPositions[i];
+            bombPositions.Add((x, y));
+            Cells[x, y] = new BombCell();
         }
     }
 
-    private void InitializeNumberCells(int width, int height)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                if (Cells[x, y] == null) // If it's not a bomb
-                {
+
+    private void InitializeNumberCells(int width, int height) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (Cells[x, y] == null) { // If it's not a bomb 
                     Cells[x, y] = new NumberCell();
                 }
             }
         }
     }
 
-    private void UpdateNumbers()
-    {
-        for (int x = 0; x < Cells.GetLength(0); x++)
-        {
-            for (int y = 0; y < Cells.GetLength(1); y++)
-            {
+    private void UpdateNumbers() {
+        for (int x = 0; x < Cells.GetLength(0); x++) {
+            for (int y = 0; y < Cells.GetLength(1); y++) {
                 if (Cells[x, y] is BombCell)
                     continue;
 
                 int bombCount = 0;
-                foreach (var (dx, dy) in Directions)
-                {
+                foreach (var (dx, dy) in Directions) {
                     int nx = x + dx, ny = y + dy;
                     if (IsInBounds(nx, ny) && Cells[nx, ny] is BombCell)
                         bombCount++;
@@ -80,15 +107,49 @@ class Grid
         }
         
     }
+    
+    public void TouchedEmpty(int x, int y) {
+        if (Cells[x, y].AdjacentBombs != 0) {
+            throw new Exception("error empty is not empty");
+        }
 
+        Cells[x, y].Revealed = true; // Mark this cell as revealed
+
+        foreach (var (dx, dy) in Directions) {
+            int nx = x + dx, ny = y + dy;
+            
+            if (IsInBounds(nx, ny)) {
+                if (!Cells[nx, ny].Revealed) {
+                    Cells[nx, ny].Revealed = true;
+                    if (Cells[nx, ny].AdjacentBombs == 0) {
+                        TouchedEmpty(nx, ny);
+                    }
+                }
+            }
+        }
+    }
+    public bool CheckWin() {
+        foreach (var pos in bombPositions) {
+            (int x, int y) = pos;
+            if (!Cells[x,y].Flagged) {
+                return false;
+            }
+        }
+        return true;
+    }
+    public void Lose(int posX, int posY) {
+        Cells[posX, posY].RevealedBombFirst = true;
+        foreach (var pos in bombPositions) {
+            (int x, int y) = pos;
+            Cells[x,y].Revealed = true;
+        }
+    }
     public void Draw() {
         int cellWidth = MagicNumbers.CELL_WIDTH;  // Width of each cell
         int cellHeight = MagicNumbers.CELL_HEIGHT; // Height of each cell
 
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
                 // Calculate position with padding
                 int xPos = i * cellWidth;
                 int yPos = j * cellHeight;
@@ -97,28 +158,30 @@ class Grid
                 switch (Cells[i, j].Name)
                 {
                     case "Bomb":
-                        Raylib.DrawCircle(xPos + cellWidth / 2, yPos + cellHeight / 2, 10, Color.Black);
+                        DrawMS.Bomb(xPos, yPos);
                         break;
                     case "Number":
-                        string bombCount = Cells[i, j].AdjacentBombs.ToString();
-                        // To center the text in the cell
-                        Raylib.DrawText(bombCount, xPos + cellWidth / 3, yPos + cellHeight / 3, 20, Color.Black);
+                        if (Cells[i, j].AdjacentBombs == 0) {
+                            DrawMS.Empty(xPos, yPos);
+                        } else {
+                            string bombCount = Cells[i, j].AdjacentBombs.ToString();
+                            // To center the text in the cell
+                            DrawMS.Number(bombCount, xPos, yPos);
+                        }
                         break;
                     default:
                         throw new Exception("Unknown cell type");
                 }
                 // Drawing layer on top of it
                 if (!Cells[i, j].Revealed) { 
-                    Raylib.DrawRectangle(xPos, yPos, cellWidth, cellHeight, Color.Gray);
+                    DrawMS.Layer(xPos, yPos);
                 }
                 if (Cells[i,j].Flagged) {
                     // Draw flag
-                    Raylib.DrawTriangle(
-                        new Vector2(xPos, yPos),
-                        new Vector2(xPos, yPos + cellHeight),
-                        new Vector2(xPos + cellWidth, yPos + cellHeight / 2), 
-                        Color.Red
-                    );
+                    DrawMS.Flag(xPos, yPos);
+                }
+                if (Cells[i,j].RevealedBombFirst) {
+                    DrawMS.LoseBomb(xPos, yPos);
                 }
             }
         }

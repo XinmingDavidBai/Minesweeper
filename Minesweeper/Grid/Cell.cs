@@ -7,6 +7,7 @@ public interface ICell
     string Name { get; }
     bool Revealed { get; set;}
     bool Flagged { get; set;}
+    bool RevealedBombFirst { get; set; }
 }
 class BombCell : ICell  {  
     public bool IsBomb => true;  
@@ -14,6 +15,7 @@ class BombCell : ICell  {
     public string Name => "Bomb";
     public bool Revealed { get; set; } = false;
     public bool Flagged { get; set; } = false;
+    public bool RevealedBombFirst { get; set; } = false;
  }  
 
 
@@ -27,5 +29,6 @@ class NumberCell : ICell  {
     }
     public bool Revealed { get; set; } = false;
     public bool Flagged { get; set; } = false;
+    public bool RevealedBombFirst { get; set; } = false; //ignore
 }
 
