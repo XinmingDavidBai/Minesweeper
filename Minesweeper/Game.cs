@@ -30,7 +30,9 @@ class Game {
             if (!won && !lost) {
                 elapsedTime = Raylib.GetTime() - startTime;
             }
-            if (Raylib.IsMouseButtonPressed(MouseButton.Left) && board && !lost && !won) {
+            if (Raylib.IsMouseButtonDown(MouseButton.Left) && Raylib.IsMouseButtonDown(MouseButton.Right) && grid.Cells[x,y].Revealed && board && !lost && !won) {
+                if (grid.BothMouseClick(x,y)) lost = true; else won = grid.CheckWinNumber();
+            } else if (Raylib.IsMouseButtonPressed(MouseButton.Left) && board && !lost && !won) {
                 if (first) {
                     first = false;
                     grid.HandleFirstClick(x,y);

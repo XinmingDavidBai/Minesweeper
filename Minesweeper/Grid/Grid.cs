@@ -155,6 +155,38 @@ class Grid {
             }
         }
     }
+    public bool CheckFlagCountSurrounding(int x, int y) {
+        int c = 0;
+        foreach (var (dx, dy) in Directions) {
+            int nx = x + dx, ny = y + dy;
+            
+            if (IsInBounds(nx, ny)) {
+                if (Cells[nx, ny].Flagged) c++;
+            }
+        }
+        return Cells[x,y].AdjacentBombs == c;
+    }
+
+    public bool RemoveSurroundingCells(int x, int y) {
+        foreach (var (dx, dy) in Directions) {
+            int nx = x + dx, ny = y + dy;
+            
+            if (IsInBounds(nx, ny)) {
+                if (!Cells[nx, ny].Flagged && !Cells[nx,ny].Revealed) Cells[nx,ny].Revealed = true;
+                if (Cells[nx,ny].AdjacentBombs == 0) TouchedEmpty(nx,ny);
+                if (Cells[nx, ny].IsBomb && !Cells[nx, ny].Flagged) {
+                    Lose(nx,ny);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public bool BothMouseClick(int x, int y) {
+        if (CheckFlagCountSurrounding(x,y)) return RemoveSurroundingCells(x,y);
+        return false;
+    }
     public bool CheckWin() {
         foreach (var pos in bombPositions) {
             (int x, int y) = pos;
