@@ -214,19 +214,13 @@ class Grid {
                 int yPos = j * cellHeight;
 
                 // Drawing cell content (bomb or number)
-                switch (Cells[i, j].Name)
-                {
+                switch (Cells[i, j].Name) {
                     case "Bomb":
                         DrawMS.Bomb(xPos, yPos);
                         break;
                     case "Number":
-                        if (Cells[i, j].AdjacentBombs == 0) {
-                            DrawMS.Empty(xPos, yPos);
-                        } else {
-                            string bombCount = Cells[i, j].AdjacentBombs.ToString();
-                            // To center the text in the cell
-                            DrawMS.Number(bombCount, xPos, yPos);
-                        }
+                        string bombCount = Cells[i, j].AdjacentBombs.ToString();
+                        DrawMS.Number(bombCount, xPos, yPos);
                         break;
                     default:
                         throw new Exception("Unknown cell type");
