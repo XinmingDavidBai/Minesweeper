@@ -30,34 +30,39 @@ class Game {
             if (!won && !lost) {
                 elapsedTime = Raylib.GetTime() - startTime;
             }
-            if (Raylib.IsMouseButtonDown(MouseButton.Left) && Raylib.IsMouseButtonDown(MouseButton.Right) && grid.Cells[x,y].Revealed && board && !lost && !won) {
-                if (grid.BothMouseClick(x,y)) lost = true; else won = grid.CheckWinNumber();
-            } else if (Raylib.IsMouseButtonPressed(MouseButton.Left) && board && !lost && !won) {
-                if (first) {
-                    first = false;
-                    grid.HandleFirstClick(x,y);
-                }
-                if (!grid.Cells[x,y].Revealed && !grid.Cells[x,y].Flagged) {
-                    if (grid.Cells[x,y].IsBomb) {
-                        grid.Lose(x, y);
-                        lost = true;
-                    } else if (grid.Cells[x,y].AdjacentBombs == 0) {
-                        grid.Cells[x,y].Revealed = true;
-                        grid.TouchedEmpty(x,y);
-                        won = grid.CheckWinNumber();
-                    } else {
-                        grid.Cells[x,y].Revealed = true;
-                        won = grid.CheckWinNumber();
+            DrawMS.FlagCount(grid.FlagCount);
+            DrawMS.Flag(730,190);
+            if (board && !lost && !won) {
+                if (Raylib.IsMouseButtonDown(MouseButton.Left) && Raylib.IsMouseButtonDown(MouseButton.Right) && grid.Cells[x,y].Revealed) {
+                    if (grid.BothMouseClick(x,y)) lost = true; else won = grid.CheckWinNumber();
+                } else if (Raylib.IsMouseButtonPressed(MouseButton.Left)) {
+                    if (first) {
+                        first = false;
+                        grid.HandleFirstClick(x,y);
+                    }
+                    if (!grid.Cells[x,y].Revealed && !grid.Cells[x,y].Flagged) {
+                        if (grid.Cells[x,y].IsBomb) {
+                            grid.Lose(x, y);
+                            lost = true;
+                        } else if (grid.Cells[x,y].AdjacentBombs == 0) {
+                            grid.Cells[x,y].Revealed = true;
+                            grid.TouchedEmpty(x,y);
+                            won = grid.CheckWinNumber();
+                        } else {
+                            grid.Cells[x,y].Revealed = true;
+                            won = grid.CheckWinNumber();
+                        }
+                    }
+                } else if (Raylib.IsMouseButtonPressed(MouseButton.Right)){
+                    if (grid.Cells[x,y].Flagged) {
+                        grid.TakeFlag(x,y);
+                    } else if (!grid.Cells[x,y].Revealed && grid.FlagCount > 0) {
+                        grid.PutFlag(x,y);
+                        if (!first) won = grid.CheckWinFlag();
                     }
                 }
-            } else if (Raylib.IsMouseButtonPressed(MouseButton.Right) && board && !lost && !won){
-                if (grid.Cells[x,y].Flagged) {
-                    grid.TakeFlag(x,y);
-                } else if (!grid.Cells[x,y].Revealed && grid.FlagCount > 0) {
-                    grid.PutFlag(x,y);
-                    if (!first) won = grid.CheckWinFlag();
-                }
-            } else if (Raylib.IsMouseButtonPressed(MouseButton.Left) && reset) {
+            }
+            if (Raylib.IsMouseButtonPressed(MouseButton.Left) && reset) {
                 grid.Reset();
                 startTime = Raylib.GetTime();
                 lost = false;

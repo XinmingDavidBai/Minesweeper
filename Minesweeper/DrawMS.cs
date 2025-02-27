@@ -74,4 +74,7 @@ public static class DrawMS {
     public static void Time(string time) {
         Raylib.DrawText(time, Raylib.GetScreenWidth() - 100, 50, 20, Color.Black);
     }
+    public static void FlagCount(int count) {
+        Raylib.DrawText(count.ToString(), Raylib.GetScreenWidth() - 100, 200, 20, Color.Black);
+    }
 }
