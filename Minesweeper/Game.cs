@@ -12,7 +12,7 @@ class Game {
         this.width = width;
         this.height = height;
         this.name = name;
-        grid = new Grid(16,16,40);
+        grid = new Grid(9,9,10);
     }
     public void Run() {
         Raylib.InitWindow(width, height, name);
@@ -58,7 +58,6 @@ class Game {
                         grid.TakeFlag(x,y);
                     } else if (!grid.Cells[x,y].Revealed && grid.FlagCount > 0) {
                         grid.PutFlag(x,y);
-                        if (!first) won = grid.CheckWinFlag();
                     }
                 }
             }

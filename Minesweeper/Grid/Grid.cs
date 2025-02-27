@@ -43,15 +43,7 @@ class Grid {
         (-1,  0),         (1,  0),
         (-1,  1), (0,  1), (1,  1)
     };
-    public bool CheckWinFlag() {
-        foreach (var bomb in bombPositions) {
-            (int x, int y) = bomb;
-            if (!Cells[x,y].Flagged) {
-                return false;
-            }
-        }
-        return true;
-    }
+
     public bool CheckWinNumber() {
         foreach (var cell in Cells) {
             if (!cell.IsBomb && !cell.Revealed) {
